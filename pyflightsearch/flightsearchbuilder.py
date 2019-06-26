@@ -1,7 +1,8 @@
 from datetime import time
+from util import build_flight_search_requests
 
 class FlightSearchBuilder:
-    def __init__(self, from_location=None, to_location=None, departure_time=None, arrival_time=None, return_departure_time=None, return_arrival_time=None, departure_day=None, arrival_day=None, return_departure_day=None, return_arrival_day=None):
+    def __init__(self, from_location=None, to_location=None, departure_time=None, arrival_time=None, return_departure_time=None, return_arrival_time=None, departure_day=None, arrival_day=None, return_departure_day=None, return_arrival_day=None, price_threshold=None):
         if from_location:
             self.from_location = from_location
         if to_location:
@@ -22,6 +23,8 @@ class FlightSearchBuilder:
             self.return_departure_day = return_departure_day
         if return_arrival_day:
             self.return_arrival_day = return_arrival_day
+        if price_threshold:
+            self.price_threshold = price_threshold
 
     def from(self, location):
         self.from_location = location
@@ -70,8 +73,20 @@ class FlightSearchBuilder:
         self.return_arrival_day = "SU"
         return self
 
+    def price_threshold(self, price):
+        if type(price) != float or type(price) != int:
+            return ConfigurationError("Input to price_threshold must be of type int or float")
+        self.price_threshold = price
+        return self
+
     def search(self):
+        # build requests
+        flight_requests = build_flight_search_requests(self)
+
         # make request
+        trips = []
+        for flight_request in flight_requests:
+            trips.append(parse_flight_response())
 
         # parse request
 

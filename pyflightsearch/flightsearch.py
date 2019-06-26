@@ -50,3 +50,9 @@ class FlightSearch:
         departure_day = "MO"
         return_arrival_day = "SU"
         return FlightSearchBuilder(departure_time=departure_time_range, return_arrival_time=return_time_range, departure_day=departure_day, return_arrival_day=return_arrival_day)
+
+    @staticmethod
+    def price_threshold(self, price):
+        if type(price) != float or type(price) != int:
+            return ConfigurationError("Input to price_threshold must be of type int or float")
+        return FlightSearchBuilder(price_threshold=price)
