@@ -1,8 +1,9 @@
-from datetime import time
+from datetime import date, time
 from util import build_flight_search_requests
 
 class FlightSearchBuilder:
-    def __init__(self, from_location=None, to_location=None, departure_time=None, arrival_time=None, return_departure_time=None, return_arrival_time=None, departure_day=None, arrival_day=None, return_departure_day=None, return_arrival_day=None, price_threshold=None):
+    # TODO(joshimbriani): Handle rollover of dates
+    def __init__(self, from_location=None, to_location=None, departure_time=None, arrival_time=None, return_departure_time=None, return_arrival_time=None, departure_day=None, arrival_day=None, return_departure_day=None, return_arrival_day=None, price_threshold=None, start_from=date(date.year, date.month + 3, date.day)):
         if from_location:
             self.from_location = from_location
         if to_location:
@@ -25,6 +26,7 @@ class FlightSearchBuilder:
             self.return_arrival_day = return_arrival_day
         if price_threshold:
             self.price_threshold = price_threshold
+        self.start_from = start_from
 
     def from(self, location):
         self.from_location = location
@@ -79,7 +81,14 @@ class FlightSearchBuilder:
         self.price_threshold = price
         return self
 
+    def start_from(self, start_date):
+        if type()
+
     def search(self):
+        # validate request
+        if not self.request_is_valid():
+            return ConfigurationError("Invalid request")
+
         # build requests
         flight_requests = build_flight_search_requests(self)
 

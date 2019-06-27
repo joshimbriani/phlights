@@ -6,7 +6,15 @@ from pyflightsearch.errors.configuration_error import ConfigurationError
 def build_flight_search_queries(flight_search_builder):
     queries = []
 
-    return API_BASE
+    # build the rest of the string
+
+    # generate dates given the conditions
+    dates = generate_dates_meeting_conditions(flight_search_builder.start_from, flight_search_builder.departure_day, flight_search_builder.return_day, 6)
+
+    # splice the dates into the queries
+
+    # return the queries
+    return queries
 
 def generate_dates_meeting_conditions(start_date, departure_day, return_day, lookahead_weeks):
     if not isinstance(start_date, date):
