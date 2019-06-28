@@ -1,4 +1,5 @@
 from datetime import date, timedelta
+from copy import deepcopy
 
 from phlights.constants import API_BASE, Day
 from phlights.errors.configuration_error import ConfigurationError
@@ -6,14 +7,11 @@ from phlights.errors.configuration_error import ConfigurationError
 def build_flight_search_queries(flight_search_builder):
     queries = []
 
-    query_string = []
+    query_string = ["partner=picky", "max_stopovers=0"]
 
     # build the rest of the string
     query_string.append("fly_from=" + flight_search_builder._from_location)
     query_string.append("fly_to=" + flight_search_builder._to_location)
-
-    query_string.append("date_from=" + flight_search_builder.get_date_range_string()[0])
-    query_string.append("date_to=" + flight_search_builder.get_date_range_string()[1])
 
     if flight_search_builder._departure_time:
         dpt_time_str = flight_search_builder.get_departure_time_string()
@@ -41,7 +39,14 @@ def build_flight_search_queries(flight_search_builder):
 
     # splice the dates into the queries
     for start_end_pair in dates:
-        queries.append()
+        query_copy = deepcopy(query_string)
+        query_copy.append("date_from=" + start_end_pair[0].strftime("%d/%m/%Y"))
+        query_copy.append("date_to=" + start_end_pair[0].strftime("%d/%m/%Y"))
+        query_copy.append("ret_date_from=" + start_end_pair[1].strftime("%d/%m/%Y"))
+        query_copy.append("ret_date_to=" + start_end_pair[1].strftime("%d/%m/%Y"))
+        query_copy.append("nights_in_dst_from=" + str((start_end_pair[1] - start_end_pair[0]).days - 1))
+        query_copy.append("nights_in_dst_to=" + str((start_end_pair[1] - start_end_pair[0]).days))
+        queries.append(API_BASE + "&".join(query_copy))
 
     # return the queries
     return queries
