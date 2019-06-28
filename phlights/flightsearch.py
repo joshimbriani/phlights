@@ -1,7 +1,8 @@
-from datetime import time
+from datetime import time, date
 
 from phlights.errors.configuration_error import ConfigurationError
 from phlights.flightsearchbuilder import FlightSearchBuilder
+from phlights.constants import Day
 
 class FlightSearch:
     @staticmethod
@@ -48,8 +49,8 @@ class FlightSearch:
     def weekend():
         departure_time_range = (time(hour=18, minute=0), time(hour=23, minute=59))
         return_time_range = (time(hour=0, minute=0), time(hour=23, minute=0))
-        departure_day = "MO"
-        return_arrival_day = "SU"
+        departure_day = Day.FRIDAY
+        return_arrival_day = Day.SUNDAY
         return FlightSearchBuilder(departure_time=departure_time_range, return_arrival_time=return_time_range, departure_day=departure_day, return_arrival_day=return_arrival_day)
 
     @staticmethod

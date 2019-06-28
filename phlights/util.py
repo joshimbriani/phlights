@@ -9,39 +9,39 @@ def build_flight_search_queries(flight_search_builder):
     query_string = []
 
     # build the rest of the string
-    query_string.append("fly_from=" + flight_search_builder.from_location)
-    query_string.append("fly_to=" + flight_search_builder.to_location)
+    query_string.append("fly_from=" + flight_search_builder._from_location)
+    query_string.append("fly_to=" + flight_search_builder._to_location)
 
     query_string.append("date_from=" + flight_search_builder.get_date_range_string()[0])
     query_string.append("date_to=" + flight_search_builder.get_date_range_string()[1])
 
-    if flight_search_builder.departure_time:
+    if flight_search_builder._departure_time:
         dpt_time_str = flight_search_builder.get_departure_time_string()
         query_string.append("dtime_from=" + dpt_time_str[0])
         query_string.append("dtime_to=" + dpt_time_str[1])
 
-    if flight_search_builder.arrival_time:
+    if flight_search_builder._arrival_time:
         arr_time_str = flight_search_builder.get_arrival_time_string()
-        query_string.append("atime_from=" + dpt_time_str[0])
-        query_string.append("atime_to=" + dpt_time_str[1])
+        query_string.append("atime_from=" + arr_time_str[0])
+        query_string.append("atime_to=" + arr_time_str[1])
 
-    if flight_search_builder.return_departure_time:
+    if flight_search_builder._return_departure_time:
         ret_dpt_time_str = flight_search_builder.get_return_departure_time_string()
         query_string.append("ret_dtime_from=" + ret_dpt_time_str[0])
         query_string.append("ret_dtime_to=" + ret_dpt_time_str[1])
 
-    if flight_search_builder.return_arrival_time:
+    if flight_search_builder._return_arrival_time:
         ret_arr_time_str = flight_search_builder.get_return_arrival_time_string()
         query_string.append("ret_atime_from=" + ret_arr_time_str[0])
         query_string.append("ret_atime_to=" + ret_arr_time_str[1])
 
-    return query_string
-
     # generate dates given the conditions
-    search_dates  = flight_search_builder.get_date_range_string()
-    dates = generate_dates_meeting_conditions(search_dates[0], flight_search_builder.departure_day, flight_search_builder.return_day, search_dates[1])
+    date_range = flight_search_builder.get_date_range()
+    dates = generate_dates_meeting_conditions(date_range[0], flight_search_builder._departure_day.value, flight_search_builder._return_arrival_day.value, date_range[1])
 
     # splice the dates into the queries
+    for start_end_pair in dates:
+        queries.append()
 
     # return the queries
     return queries
