@@ -1,2 +1,2 @@
-from .context import pyflightsearch
+from .context import phlights
 

@@ -1,14 +1,15 @@
-from flightsearchbuilder import FlightSearchBuilder
-from errors.configuration_error import ConfigurationError
 from datetime import time
+
+from phlights.errors.configuration_error import ConfigurationError
+from phlights.flightsearchbuilder import FlightSearchBuilder
 
 class FlightSearch:
     @staticmethod
-    def from(location):
+    def from_place(location):
         return FlightSearchBuilder(from_location=location)
 
     @staticmethod
-    def to(location):
+    def to_place(location):
         return FlightSearchBuilder(to_location=location)
 
     @staticmethod
@@ -56,3 +57,10 @@ class FlightSearch:
         if type(price) != float or type(price) != int:
             return ConfigurationError("Input to price_threshold must be of type int or float")
         return FlightSearchBuilder(price_threshold=price)
+
+    @staticmethod
+    def start_from(self, start_date):
+        if not isinstance(start_date, date):
+            return ConfigurationError("Input to start_from must be of type date")
+        self.start_from = start_date
+        return self

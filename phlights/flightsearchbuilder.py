@@ -1,9 +1,9 @@
-from datetime import date, time
-from util import build_flight_search_requests
+from datetime import date, time, timedelta
+
+from phlights.util import build_flight_search_queries
 
 class FlightSearchBuilder:
-    # TODO(joshimbriani): Handle rollover of dates
-    def __init__(self, from_location=None, to_location=None, departure_time=None, arrival_time=None, return_departure_time=None, return_arrival_time=None, departure_day=None, arrival_day=None, return_departure_day=None, return_arrival_day=None, price_threshold=None, start_from=date(date.year, date.month + 3, date.day)):
+    def __init__(self, from_location=None, to_location=None, departure_time=None, arrival_time=None, return_departure_time=None, return_arrival_time=None, departure_day=None, arrival_day=None, return_departure_day=None, return_arrival_day=None, price_threshold=None, start_from=(date.today() + timedelta(days=30))):
         if from_location:
             self.from_location = from_location
         if to_location:
@@ -28,11 +28,11 @@ class FlightSearchBuilder:
             self.price_threshold = price_threshold
         self.start_from = start_from
 
-    def from(self, location):
+    def from_place(self, location):
         self.from_location = location
         return self
 
-    def to(self, location):
+    def to_place(self, location):
         self.to_location = location
         return self
 
@@ -70,9 +70,9 @@ class FlightSearchBuilder:
 
     def weekend(self):
         self.departure_time = (time(hour=18, minute=0), time(hour=23, minute=59))
-        self.return_time = (time(hour=0, minute=0), time(hour=23, minute=0))
+        self.return_time = (time(hour=0, minute=0), time(hour=23, minute=00))
         self.departure_day = "MO"
-        self.return_arrival_day = "SU"
+        self.return_arrival_day = 0
         return self
 
     def price_threshold(self, price):
@@ -81,10 +81,15 @@ class FlightSearchBuilder:
         self.price_threshold = price
         return self
 
-    def start_from(self, start_date):
-        if type()
+    def _start_from(self, start_date):
+        if not isinstance(start_date, date):
+            return ConfigurationError("Input to start_from must be of type date")
+        self.start_from = start_date
+        return self
 
     def search(self):
+        return build_flight_search_requests(self)
+
         # validate request
         if not self.request_is_valid():
             return ConfigurationError("Invalid request")
@@ -101,3 +106,28 @@ class FlightSearchBuilder:
 
         # return trip object
         pass
+
+    def get_departure_time_string(self):
+        if not self.departure_time:
+            return None
+        return (self.departure_time[0].strftime("%H:%M"), self.departure_time[1].strftime("%H:%M"))
+
+    def get_arrival_time_string(self):
+        if not self.arrival_time:
+            return None
+        return (self.arrival_time[0].strftime("%H:%M"), self.arrival_time[1].strftime("%H:%M"))
+
+    def get_return_departure_time_string(self):
+        if not self.return_departure_time:
+            return None
+        return (self.return_departure_time[0].strftime("%H:%M"), self.return_departure_time[1].strftime("%H:%M"))
+
+    def get_return_arrival_time_string(self):
+        if not self.return_arrival_time:
+            return None
+        return (self.return_arrival_time[0].strftime("%H:%M"), self.return_arrival_time[1].strftime("%H:%M"))
+
+    def get_date_range_string(self):
+        if not self.start_from:
+            return None
+        return (self.start_from.strftime("%d/%m/%Y"), (self.start_from + timedelta(90)).strftime("%d/%m/%Y"))

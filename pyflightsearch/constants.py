@@ -1,3 +1,0 @@
-API_BASE = 'https://api.skypicker.com'
-DEFAULT_REQUEST_DELAY = 3
-MAX_LOOKAHEAD_WEEKS = 12
