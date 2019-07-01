@@ -1,6 +1,7 @@
 from datetime import datetime
 
-# TODO(joshimbriani): Fix datetimes. All using UTC? Handle timezones
+from dateutil import tz
+
 class Flight:
     def __init__(self, from_location=None, from_location_code=None, to_location=None, to_location_code=None, departure_time=None, arrival_time=None, airline=None, duration=None, flight_number=None):
         self._from_location = from_location
@@ -31,11 +32,11 @@ class Flight:
 
     @property
     def departure_time(self):
-        return datetime.fromtimestamp(self._departure_time)
+        return datetime.fromtimestamp(self._departure_time).replace(tzinfo=tz.tzutc())
 
     @property
     def arrival_time(self):
-        return datetime.fromtimestamp(self._arrival_time)
+        return datetime.fromtimestamp(self._arrival_time).replace(tzinfo=tz.tzutc())
 
     @property
     def airline(self):
@@ -43,7 +44,7 @@ class Flight:
 
     @property
     def duration(self):
-        return self._duration
+        return (self._duration/60/60)
 
     @property
     def flight_number(self):
@@ -57,10 +58,10 @@ class Flight:
         f._to_location = flight_data["cityTo"]
         f._from_location_code = flight_data["flyFrom"]
         f._to_location_code = flight_data["flyTo"]
-        f._departure_time = flight_data["dTime"]
-        f._arrival_time = flight_data["aTime"]
+        f._departure_time = flight_data["dTimeUTC"]
+        f._arrival_time = flight_data["aTimeUTC"]
         f._airline = flight_data["airline"]
-        f._duration = flight_data["aTime"] - flight_data["dTime"]
+        f._duration = flight_data["aTimeUTC"] - flight_data["dTimeUTC"]
         f._flight_number = flight_data["flight_no"]
 
         return f
@@ -68,10 +69,10 @@ class Flight:
     def __str__(self):
         s = ""
         s += "Flight from {} to {}".format(self.from_location, self.to_location) + " \n"
-        s += "    Departure Time: {}".format(self.departure_time.strftime("%m/%d/%Y, %H:%M:%S")) + " \n"
-        s += "    Arrival Time: {}".format(self.arrival_time.strftime("%m/%d/%Y, %H:%M:%S")) + "\n"
+        s += "    Departure Time: {}".format(self.departure_time.strftime("%m/%d/%Y, %-I:%M %p")) + " \n"
+        s += "    Arrival Time: {}".format(self.arrival_time.strftime("%m/%d/%Y, %-I:%M %p")) + "\n"
         s += "    Airline: {}".format(self.airline) + "\n"
-        s += "    Duration: {}".format(self.duration) + "\n"
+        s += "    Duration: {} hours".format(self.duration) + "\n"
         s += "    Flight Number: {}".format(self.flight_number) + "\n"
 
         return s

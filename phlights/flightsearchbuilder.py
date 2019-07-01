@@ -90,13 +90,14 @@ class FlightSearchBuilder:
 
         # make request
         trips = []
-        for flight_query in flight_queries[:1]:
+        for flight_query in flight_queries:
             trip = parse_flight_response(make_api_request(flight_query))
             if trip:
                 trips.extend(trip)
             sleep(API_BACKOFF_SECONDS)
 
         # return trip object
+        trips.sort(key=lambda trip: trip.price)
         return trips
 
     def request_is_valid(self):

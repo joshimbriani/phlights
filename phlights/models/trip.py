@@ -1,5 +1,6 @@
 from phlights.models.leg import Leg
 
+# TODO(joshimbriani): Handle non round trip flights
 class Trip:
     def __init__(self, price=None, from_location=None, from_location_code=None, to_location=None, to_location_code=None, legs=None):
         self._price = price

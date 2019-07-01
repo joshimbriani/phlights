@@ -1,6 +1,8 @@
 import math
 from datetime import datetime
 
+from dateutil import tz
+
 from phlights.errors.configuration_error import ConfigurationError
 from phlights.util import find_route
 from phlights.models.flight import Flight
@@ -17,11 +19,11 @@ class Leg:
 
     @property
     def departure_time(self):
-        return datetime.fromtimestamp(self._departure_time)
+        return datetime.fromtimestamp(self._departure_time).replace(tzinfo=tz.tzutc())#.astimezone(tz.tzlocal())
 
     @property
     def arrival_time(self):
-        return datetime.fromtimestamp(self._arrival_time)
+        return datetime.fromtimestamp(self._arrival_time).replace(tzinfo=tz.tzutc())#.astimezone(tz.tzlocal())
 
     @property
     def flights(self):
@@ -109,7 +111,7 @@ def generate_leg_params(all_flights):
 
     for flight in all_flights:
         flights.append(Flight.build_flight(flight))
-        departure_time = min(departure_time, flight["dTime"])
-        arrival_time = max(arrival_time, flight["aTime"])
+        departure_time = min(departure_time, flight["dTimeUTC"])
+        arrival_time = max(arrival_time, flight["aTimeUTC"])
 
     return [flights, departure_time, arrival_time]
