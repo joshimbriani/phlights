@@ -1,7 +1,6 @@
 from datetime import datetime
 
-from dateutil import tz
-
+# TODO(joshimbriani): Use tz?
 class Flight:
     def __init__(self, from_location=None, from_location_code=None, to_location=None, to_location_code=None, departure_time=None, arrival_time=None, airline=None, duration=None, flight_number=None):
         self._from_location = from_location
@@ -32,11 +31,11 @@ class Flight:
 
     @property
     def departure_time(self):
-        return datetime.fromtimestamp(self._departure_time).replace(tzinfo=tz.tzutc())
+        return datetime.fromtimestamp(self._departure_time)
 
     @property
     def arrival_time(self):
-        return datetime.fromtimestamp(self._arrival_time).replace(tzinfo=tz.tzutc())
+        return datetime.fromtimestamp(self._arrival_time)
 
     @property
     def airline(self):
