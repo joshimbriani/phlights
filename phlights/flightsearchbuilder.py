@@ -1,8 +1,10 @@
 from datetime import date, time, timedelta
+from time import sleep
 
-from phlights.util import build_flight_search_queries
+from phlights.util import build_flight_search_queries, make_api_request
 from phlights.errors.configuration_error import ConfigurationError
-from phlights.constants import Day
+from phlights.constants import Day, MAX_LOOKAHEAD_DAYS, API_BACKOFF_SECONDS
+from phlights.models.trip import Trip
 
 class FlightSearchBuilder:
     def __init__(self, from_location=None, to_location=None, departure_time=None, arrival_time=None, return_departure_time=None, return_arrival_time=None, departure_day=None, arrival_day=None, return_departure_day=None, return_arrival_day=None, price_threshold=None, start_from=(date.today() + timedelta(days=30))):
@@ -79,24 +81,29 @@ class FlightSearchBuilder:
         return self
 
     def search(self):
-        return build_flight_search_queries(self)
-
         # validate request
         if not self.request_is_valid():
             return ConfigurationError("Invalid request")
 
         # build requests
-        flight_requests = build_flight_search_queries(self)
+        flight_queries = build_flight_search_queries(self)
 
         # make request
         trips = []
-        for flight_request in flight_requests:
-            trips.append(parse_flight_response())
-
-        # parse request
+        for flight_query in flight_queries[:1]:
+            trip = parse_flight_response(make_api_request(flight_query))
+            if trip:
+                trips.extend(trip)
+            sleep(API_BACKOFF_SECONDS)
 
         # return trip object
-        pass
+        return trips
+
+    def request_is_valid(self):
+        if not self._to_location or not self._from_location:
+            return False
+
+        return True
 
     def get_departure_time_string(self):
         if not self._departure_time:
@@ -121,9 +128,19 @@ class FlightSearchBuilder:
     def get_date_range(self):
         if not self._start_from:
             return None
-        return (self._start_from, (self._start_from + timedelta(90)))
+        return (self._start_from, (self._start_from + timedelta(MAX_LOOKAHEAD_DAYS)))
 
     def get_date_range_string(self):
         if not self._start_from:
             return None
-        return (self._start_from.strftime("%d/%m/%Y"), (self._start_from + timedelta(90)).strftime("%d/%m/%Y"))
+        return (self._start_from.strftime("%d/%m/%Y"), (self._start_from + timedelta(MAX_LOOKAHEAD_DAYS)).strftime("%d/%m/%Y"))
+
+def parse_flight_response(flight_response):
+    if not flight_response:
+        return None
+
+    trips = []
+    for trip in flight_response:
+        trips.append(Trip.build_trip(trip))
+
+    return trips

@@ -1,6 +1,8 @@
 from datetime import date, timedelta
 from copy import deepcopy
 
+import requests
+
 from phlights.constants import API_BASE, Day
 from phlights.errors.configuration_error import ConfigurationError
 
@@ -35,18 +37,29 @@ def build_flight_search_queries(flight_search_builder):
 
     # generate dates given the conditions
     date_range = flight_search_builder.get_date_range()
-    dates = generate_dates_meeting_conditions(date_range[0], flight_search_builder._departure_day.value, flight_search_builder._return_arrival_day.value, date_range[1])
-
-    # splice the dates into the queries
-    for start_end_pair in dates:
-        query_copy = deepcopy(query_string)
-        query_copy.append("date_from=" + start_end_pair[0].strftime("%d/%m/%Y"))
-        query_copy.append("date_to=" + start_end_pair[0].strftime("%d/%m/%Y"))
-        query_copy.append("ret_date_from=" + start_end_pair[1].strftime("%d/%m/%Y"))
-        query_copy.append("ret_date_to=" + start_end_pair[1].strftime("%d/%m/%Y"))
-        query_copy.append("nights_in_dst_from=" + str((start_end_pair[1] - start_end_pair[0]).days - 1))
-        query_copy.append("nights_in_dst_to=" + str((start_end_pair[1] - start_end_pair[0]).days))
-        queries.append(API_BASE + "&".join(query_copy))
+    if flight_search_builder._departure_day and flight_search_builder._return_arrival_day:
+        dates = generate_dates_meeting_conditions(date_range[0], flight_search_builder._departure_day.value, flight_search_builder._return_arrival_day.value, date_range[1])
+        for start_end_pair in dates:
+            query_copy = deepcopy(query_string)
+            query_copy.append("date_from=" + start_end_pair[0].strftime("%d/%m/%Y"))
+            query_copy.append("date_to=" + start_end_pair[0].strftime("%d/%m/%Y"))
+            query_copy.append("ret_date_from=" + start_end_pair[1].strftime("%d/%m/%Y"))
+            query_copy.append("ret_date_to=" + start_end_pair[1].strftime("%d/%m/%Y"))
+            query_copy.append("nights_in_dst_from=" + str((start_end_pair[1] - start_end_pair[0]).days - 1))
+            query_copy.append("nights_in_dst_to=" + str((start_end_pair[1] - start_end_pair[0]).days))
+            queries.append(API_BASE + "&".join(query_copy))
+    elif flight_search_builder._date_from and flight_search_builder._date_to:
+        # User has specified a firm start and end date
+        query_string.append("date_from=" + date_range[0].strftime("%d/%m/%Y"))
+        query_string.append("date_to=" + date_range[0].strftime("%d/%m/%Y"))
+        query_string.append("return_from=" + date_range[1].strftime("%d/%m/%Y"))
+        query_string.append("return_to=" + date_range[1].strftime("%d/%m/%Y"))
+        queries.append(API_BASE + "&".join(query_string))
+    else:
+        # User hasn't give a start or end date, instead just set the search start date to start_from
+        query_string.append("date_from=" + date_range[0].strftime("%d/%m/%Y"))
+        query_string.append("date_to=" + date_range[1].strftime("%d/%m/%Y"))
+        queries.append(API_BASE + "&".join(query_string))
 
     # return the queries
     return queries
@@ -76,3 +89,22 @@ def generate_dates_meeting_conditions(start_date, departure_day, return_day, sto
 def daterange(start_date, duration):
     for i in range(duration):
         yield start_date + timedelta(i)
+
+def make_api_request(query_string):
+    r = requests.get(query_string)
+    if r.status_code != 200 and r.status_code != 201:
+        return None
+    response_json = r.json()
+    if "data" not in response_json:
+        return None
+    return response_json["data"]
+
+def find_route(flight_data, start, end):
+    for route in flight_data:
+        if route["flyFrom"] == start and route["flyTo"] == end:
+            return [route]
+        elif route["flyFrom"] == start:
+            rest_of_path = find_route(flight_data, route["flyTo"], end)
+            if rest_of_path:
+                return [route].extend(rest_of_path)
+    return None
