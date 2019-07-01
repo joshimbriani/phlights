@@ -181,4 +181,7 @@ dmypy.json
 # Ignore all local history of files
 .history
 
+# A Test file I'm using
+tmp.py
+
 # End of https://www.gitignore.io/api/linux,macos,python,visualstudiocode
