@@ -1,6 +1,6 @@
 from datetime import datetime
 
-# TODO(joshimbriani): 
+# TODO(joshimbriani): Fix datetimes. All using UTC? Handle timezones
 class Flight:
     def __init__(self, from_location=None, from_location_code=None, to_location=None, to_location_code=None, departure_time=None, arrival_time=None, airline=None, duration=None, flight_number=None):
         self._from_location = from_location
