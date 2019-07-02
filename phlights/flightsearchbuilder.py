@@ -7,7 +7,7 @@ from phlights.constants import Day, MAX_LOOKAHEAD_DAYS, API_BACKOFF_SECONDS
 from phlights.models.trip import Trip
 
 class FlightSearchBuilder:
-    def __init__(self, from_location=None, to_location=None, departure_time=None, arrival_time=None, return_departure_time=None, return_arrival_time=None, departure_day=None, arrival_day=None, return_departure_day=None, return_arrival_day=None, price_threshold=None, start_from=(date.today() + timedelta(days=30))):
+    def __init__(self, from_location=None, to_location=None, departure_time=None, arrival_time=None, return_departure_time=None, return_arrival_time=None, departure_day=None, arrival_day=None, return_departure_day=None, return_arrival_day=None, price_threshold=None, start_from=(date.today() + timedelta(days=30)), allow_layovers=False):
         self._from_location = from_location
         self._to_location = to_location
         self._departure_time = departure_time
@@ -20,6 +20,7 @@ class FlightSearchBuilder:
         self._return_arrival_day = return_arrival_day
         self._price_threshold = price_threshold
         self._start_from = start_from
+        self._allow_layovers = allow_layovers
 
     def from_place(self, location):
         self._from_location = location
@@ -63,7 +64,8 @@ class FlightSearchBuilder:
 
     def weekend(self):
         self._departure_time = (time(hour=18, minute=0), time(hour=23, minute=59))
-        self._return_time = (time(hour=0, minute=0), time(hour=23, minute=00))
+        #self._arrival_time = (time(hour=0, minute=0), time(hour=6, minute=0))
+        self._return_arrival_time = (time(hour=0, minute=0), time(hour=23, minute=59))
         self._departure_day = Day.FRIDAY
         self._return_arrival_day = Day.SUNDAY
         return self
@@ -78,6 +80,12 @@ class FlightSearchBuilder:
         if not isinstance(start_date, date):
             return ConfigurationError("Input to start_from must be of type date")
         self._start_from = start_date
+        return self
+
+    def allow_layovers(self, allow_layovers):
+        if type(allow_layovers) != bool:
+            return ConfigurationError("Input to allow_layovers must be of type boolean")
+        self._allow_layovers = allow_layovers
         return self
 
     def search(self):

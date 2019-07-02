@@ -49,6 +49,7 @@ class FlightSearch:
     def weekend():
         departure_time_range = (time(hour=18, minute=0), time(hour=23, minute=59))
         return_time_range = (time(hour=0, minute=0), time(hour=23, minute=0))
+        #arrival_time_range = (time(hour=0, minute=0), time(hour=6, minute=0))
         departure_day = Day.FRIDAY
         return_arrival_day = Day.SUNDAY
         return FlightSearchBuilder(departure_time=departure_time_range, return_arrival_time=return_time_range, departure_day=departure_day, return_arrival_day=return_arrival_day)
@@ -63,5 +64,11 @@ class FlightSearch:
     def start_from(self, start_date):
         if not isinstance(start_date, date):
             return ConfigurationError("Input to start_from must be of type date")
-        self.start_from = start_date
-        return self
+        return FlightSearchBuilder(start_from=start_date)
+
+    @staticmethod
+    def allow_layovers(self, allow_layovers):
+        if type(allow_layovers) != bool:
+            return ConfigurationError("Input to allow_layovers must be of type bool")
+        return FlightSearchBuilder(allow_layovers=allow_layovers)
+        

@@ -9,7 +9,9 @@ from phlights.errors.configuration_error import ConfigurationError
 def build_flight_search_queries(flight_search_builder):
     queries = []
 
-    query_string = ["partner=picky", "max_stopovers=0"]
+    query_string = ["partner=picky", "curr=USD"]
+
+    query_string.append("max_stopovers=" + ("1" if flight_search_builder._allow_layovers else "0"))
 
     # build the rest of the string
     query_string.append("fly_from=" + flight_search_builder._from_location)
@@ -43,10 +45,10 @@ def build_flight_search_queries(flight_search_builder):
             query_copy = deepcopy(query_string)
             query_copy.append("date_from=" + start_end_pair[0].strftime("%d/%m/%Y"))
             query_copy.append("date_to=" + start_end_pair[0].strftime("%d/%m/%Y"))
-            query_copy.append("ret_date_from=" + start_end_pair[1].strftime("%d/%m/%Y"))
-            query_copy.append("ret_date_to=" + start_end_pair[1].strftime("%d/%m/%Y"))
+            query_copy.append("return_from=" + start_end_pair[1].strftime("%d/%m/%Y"))
+            query_copy.append("return_to=" + start_end_pair[1].strftime("%d/%m/%Y"))
             query_copy.append("nights_in_dst_from=" + str((start_end_pair[1] - start_end_pair[0]).days - 1))
-            query_copy.append("nights_in_dst_to=" + str((start_end_pair[1] - start_end_pair[0]).days))
+            query_copy.append("nights_in_dst_to=" + str((start_end_pair[1] - start_end_pair[0]).days - 1))
             queries.append(API_BASE + "&".join(query_copy))
     elif flight_search_builder._date_from and flight_search_builder._date_to:
         # User has specified a firm start and end date
@@ -100,11 +102,18 @@ def make_api_request(query_string):
     return response_json["data"]
 
 def find_route(flight_data, start, end):
+    return find_route_helper(flight_data, start, end, set())
+
+def find_route_helper(flight_data, start, end, seen):
     for route in flight_data:
+        if (route["flyFrom"], route["flyTo"]) in seen:
+            continue
         if route["flyFrom"] == start and route["flyTo"] == end:
             return [route]
         elif route["flyFrom"] == start:
-            rest_of_path = find_route(flight_data, route["flyTo"], end)
+            seen_clone = deepcopy(seen)
+            seen_clone.add((route["flyFrom"], route["flyTo"]))
+            rest_of_path = find_route_helper(flight_data, route["flyTo"], end, seen_clone)
             if rest_of_path:
-                return [route].extend(rest_of_path)
+                return [route] + rest_of_path
     return None
