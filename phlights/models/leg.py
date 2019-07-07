@@ -1,14 +1,15 @@
 import math
 from datetime import datetime
 
-from dateutil import tz
+import pytz
+from tzlocal import get_localzone
 
 from phlights.errors.configuration_error import ConfigurationError
 from phlights.util import find_route
 from phlights.models.flight import Flight
 
 class Leg:
-    def __init__(self, departure_time=None, arrival_time=None, flights=None, from_location=None, from_location_code=None, to_location=None, to_location_code=None):
+    def __init__(self, departure_time=None, arrival_time=None, flights=None, from_location="", from_location_code="", to_location="", to_location_code=""):
         self._departure_time = departure_time
         self._arrival_time = arrival_time
         self._flights = flights
@@ -19,14 +20,25 @@ class Leg:
 
     @property
     def departure_time(self):
-        return datetime.fromtimestamp(self._departure_time).replace(tzinfo=tz.tzutc())#.astimezone(tz.tzlocal())
+        if not self._departure_time:
+            return datetime.utcfromtimestamp(0)
+
+        local_tz = get_localzone()
+        return datetime.utcfromtimestamp(self._departure_time).replace(tzinfo=pytz.utc).astimezone(local_tz)
 
     @property
     def arrival_time(self):
-        return datetime.fromtimestamp(self._arrival_time).replace(tzinfo=tz.tzutc())#.astimezone(tz.tzlocal())
+        if not self._arrival_time:
+            return datetime.utcfromtimestamp(0)
+        
+        local_tz = get_localzone()
+        return datetime.utcfromtimestamp(self._arrival_time).replace(tzinfo=pytz.utc).astimezone(local_tz)
 
     @property
     def flights(self):
+        if not self._flights:
+            return []
+
         return self._flights
 
     @property
@@ -47,16 +59,20 @@ class Leg:
 
     @property
     def layovers(self):
+        if not self._flights:
+            return -1
+        
         return len(self._flights) - 1
 
     @property
     def duration(self):
-        return self._arrival_time - self._departure_time
+        if not self._arrival_time or not self._departure_time:
+            return 0
+
+        return datetime.utcfromtimestamp(self._arrival_time) - datetime.utcfromtimestamp(self._departure_time)
 
     @staticmethod
     def build_legs(flight_data, start, end, start_city, end_city):
-        legs = []
-
         # First find the route from start to end
         departure_route = find_route(flight_data, start, end)
         if not departure_route:
