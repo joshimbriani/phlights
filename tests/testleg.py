@@ -5,6 +5,7 @@ import pytz
 from tzlocal import get_localzone
 
 from phlights.models.leg import Leg
+from phlights.models.flight import Flight
 
 
 class LegTest(unittest.TestCase):
@@ -63,7 +64,7 @@ class LegTest(unittest.TestCase):
     def test_layovers(self):
         l = Leg(flights=[{"flight_number": 1}, {"flight_number": 2}])
 
-        self.assertEquals(l.layovers, 1)
+        self.assertEqual(l.layovers, 1)
 
     def test_duration(self):
         departure_time = datetime(2020, 1, 1, 10, 10, 10)
@@ -74,3 +75,16 @@ class LegTest(unittest.TestCase):
 
         l = Leg(departure_time=departure_time_stamp, arrival_time=arrival_time_stamp)
         self.assertEqual(l.duration.total_seconds(), 7200)
+
+    def test_to_string(self):
+        f1 = Flight(from_location="San Francisco", to_location="Orlando", from_location_code="SFO", to_location_code="MCO", departure_time=datetime(2020, 1, 1, 10, 10, 10).timestamp(), arrival_time=datetime(2020, 1, 1, 12, 10, 10).timestamp(), airline="UA", flight_number=1120)
+        f2 = Flight(from_location="Orlando", to_location="Columbus", from_location_code="MCO", to_location_code="CMH", departure_time=datetime(2020, 1, 1, 12, 10, 10).timestamp(), arrival_time=datetime(2020, 1, 1, 14, 10, 10).timestamp(), airline="UA", flight_number=1121)
+        l = Leg(from_location="San Francisco", to_location="Orlando", from_location_code="SFO", to_location_code="MCO", departure_time=datetime(2020, 1, 1, 10, 10, 10).timestamp(), arrival_time=datetime(2020, 1, 1, 14, 10, 10).timestamp(), flights=[f1, f2])
+
+        s = ""
+        s += "Leg from San Francisco to Orlando\n"
+        s += "    Duration: 4.0 hours\n"
+        s += "    Layovers: 1\n"
+        s += "    " + f1.__str__() + "\n"
+        s += "    " + f2.__str__() + "\n"
+        self.assertEqual(s, l.__str__())

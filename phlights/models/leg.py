@@ -112,7 +112,7 @@ class Leg:
     def __str__(self):
         s = ""
         s += "Leg from {} to {}".format(self.from_location, self.to_location) + "\n"
-        s += "    Duration: {}".format(self.duration) + "\n"
+        s += "    Duration: {} hours".format(self.duration.total_seconds()/60/60) + "\n"
         s += "    Layovers: {}".format(self.layovers) + "\n"
         for flight in self.flights:
             s += "    " + str(flight) + "\n"

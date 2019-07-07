@@ -2,7 +2,7 @@ from phlights.models.leg import Leg
 
 # TODO(joshimbriani): Handle non round trip flights
 class Trip:
-    def __init__(self, price=None, from_location=None, from_location_code=None, to_location=None, to_location_code=None, legs=None, book_url=None):
+    def __init__(self, price=None, from_location="", from_location_code="", to_location="", to_location_code="", legs=None, book_url=""):
         self._price = price
         self._from_location = from_location
         self._from_location_code = from_location_code
@@ -16,6 +16,9 @@ class Trip:
 
     @property
     def price(self):
+        if not self._price:
+            return -1
+        
         return self._price
 
     @property
@@ -36,6 +39,9 @@ class Trip:
 
     @property
     def legs(self):
+        if not self._legs:
+            return []
+            
         return self._legs
 
     @property
