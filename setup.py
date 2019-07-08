@@ -1,14 +1,16 @@
+import setuptools
+from setuptools import find_packages
 from distutils.core import setup
 
 setup(
-    name='Phlights',
-    version='0.1.0',
+    name='phlights',
+    version='0.2.0',
     author='Josh Imbriani',
     author_email='josh@mailinator.com',
-    packages=['phlights'],
-    url='http://pypi.python.org/pypi/Phlights/',
+    packages=find_packages(exclude=["tests", "*.tests", "*.tests.*", "tests.*"]),
+    url='http://pypi.python.org/pypi/phlights/',
     license='LICENSE',
-    description='Useful towel-related stuff.',
+    description='Flight Search API Powered by Kiwi',
     long_description=open('README.md').read(),
     install_requires=[
         "astroid == 2.2.5",
@@ -23,6 +25,7 @@ setup(
         "requests == 2.22.0",
         "six == 1.12.0",
         "typed-ast == 1.4.0",
+        "tzlocal == 1.5.1",
         "urllib3 == 1.25.3",
         "wrapt == 1.11.2"
     ],
