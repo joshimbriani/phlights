@@ -1,4 +1,4 @@
-from datetime import time, date
+from datetime import time, date, datetime
 
 from phlights.errors.configuration_error import ConfigurationError
 from phlights.flightsearchbuilder import FlightSearchBuilder
@@ -55,20 +55,31 @@ class FlightSearch:
         return FlightSearchBuilder(departure_time=departure_time_range, return_arrival_time=return_time_range, departure_day=departure_day, return_arrival_day=return_arrival_day)
 
     @staticmethod
-    def price_threshold(self, price):
-        if type(price) != float or type(price) != int:
+    def price_threshold(price):
+        if type(price) != float and type(price) != int:
             return ConfigurationError("Input to price_threshold must be of type int or float")
         return FlightSearchBuilder(price_threshold=price)
 
     @staticmethod
-    def start_from(self, start_date):
+    def start_from(start_date):
         if not isinstance(start_date, date):
             return ConfigurationError("Input to start_from must be of type date")
         return FlightSearchBuilder(start_from=start_date)
 
     @staticmethod
-    def allow_layovers(self, allow_layovers):
+    def allow_layovers(allow_layovers):
         if type(allow_layovers) != bool:
             return ConfigurationError("Input to allow_layovers must be of type bool")
         return FlightSearchBuilder(allow_layovers=allow_layovers)
         
+    @staticmethod
+    def departure_date(departure_date):
+        if not isinstance(departure_date, date):
+            return ConfigurationError("Input to departure_date must be of type datetime")
+        return FlightSearchBuilder(departure_date=departure_date)
+    
+    @staticmethod
+    def return_departure_date(return_departure_date):
+        if not isinstance(return_departure_date, date):
+            return ConfigurationError("Input to departure_date must be of type datetime")
+        return FlightSearchBuilder(return_departure_date=return_departure_date)

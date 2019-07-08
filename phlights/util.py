@@ -1,4 +1,4 @@
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 from copy import deepcopy
 
 import requests
@@ -50,12 +50,12 @@ def build_flight_search_queries(flight_search_builder):
             query_copy.append("nights_in_dst_from=" + str((start_end_pair[1] - start_end_pair[0]).days - 1))
             query_copy.append("nights_in_dst_to=" + str((start_end_pair[1] - start_end_pair[0]).days - 1))
             queries.append(API_BASE + "&".join(query_copy))
-    elif flight_search_builder._date_from and flight_search_builder._date_to:
+    elif flight_search_builder._departure_date and flight_search_builder._return_departure_date:
         # User has specified a firm start and end date
-        query_string.append("date_from=" + date_range[0].strftime("%d/%m/%Y"))
-        query_string.append("date_to=" + date_range[0].strftime("%d/%m/%Y"))
-        query_string.append("return_from=" + date_range[1].strftime("%d/%m/%Y"))
-        query_string.append("return_to=" + date_range[1].strftime("%d/%m/%Y"))
+        query_string.append("date_from=" + flight_search_builder._departure_date.strftime("%d/%m/%Y"))
+        query_string.append("date_to=" + flight_search_builder._departure_date.strftime("%d/%m/%Y"))
+        query_string.append("return_from=" + flight_search_builder._return_departure_date.strftime("%d/%m/%Y"))
+        query_string.append("return_to=" + flight_search_builder._return_departure_date.strftime("%d/%m/%Y"))
         queries.append(API_BASE + "&".join(query_string))
     else:
         # User hasn't give a start or end date, instead just set the search start date to start_from
@@ -67,13 +67,13 @@ def build_flight_search_queries(flight_search_builder):
     return queries
 
 def generate_dates_meeting_conditions(start_date, departure_day, return_day, stop_date):
-    if not isinstance(start_date, date):
+    if not isinstance(start_date, date) or isinstance(start_date, datetime):
         return ConfigurationError("start_date input to generate_dates_meeting_conditions must be a date object")
     if type(departure_day) != int:
         return ConfigurationError("departure_day input to generate_dates_meeting_conditions must be a int")
     if type(return_day) != int:
         return ConfigurationError("return_day input to generate_dates_meeting_conditions must be a int")
-    if not isinstance(stop_date, date):
+    if not isinstance(stop_date, date) or isinstance(stop_date, datetime):
         return ConfigurationError("stop_date input to generate_dates_meeting_conditions must be a date object")
 
     pairs = []

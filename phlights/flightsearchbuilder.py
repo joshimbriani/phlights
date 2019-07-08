@@ -1,4 +1,4 @@
-from datetime import date, time, timedelta
+from datetime import date, time, timedelta, datetime
 from time import sleep
 
 from phlights.util import build_flight_search_queries, make_api_request
@@ -7,7 +7,7 @@ from phlights.constants import Day, MAX_LOOKAHEAD_DAYS, API_BACKOFF_SECONDS
 from phlights.models.trip import Trip
 
 class FlightSearchBuilder:
-    def __init__(self, from_location=None, to_location=None, departure_time=None, arrival_time=None, return_departure_time=None, return_arrival_time=None, departure_day=None, arrival_day=None, return_departure_day=None, return_arrival_day=None, price_threshold=None, start_from=(date.today() + timedelta(days=30)), allow_layovers=False):
+    def __init__(self, from_location=None, to_location=None, departure_time=None, arrival_time=None, return_departure_time=None, return_arrival_time=None, departure_day=None, arrival_day=None, return_departure_day=None, return_arrival_day=None, price_threshold=None, start_from=(date.today() + timedelta(days=30)), allow_layovers=False, departure_date=None, return_departure_date=None):
         self._from_location = from_location
         self._to_location = to_location
         self._departure_time = departure_time
@@ -21,6 +21,8 @@ class FlightSearchBuilder:
         self._price_threshold = price_threshold
         self._start_from = start_from
         self._allow_layovers = allow_layovers
+        self._departure_date = departure_date
+        self._return_departure_date = return_departure_date
 
     def from_place(self, location):
         self._from_location = location
@@ -28,6 +30,12 @@ class FlightSearchBuilder:
 
     def to_place(self, location):
         self._to_location = location
+        return self
+
+    def departure_date(self, departure_date):
+        if not isinstance(departure_date, date):
+            return ConfigurationError("Input to departure_date must be of type datetime")
+        self._departure_date = departure_date
         return self
 
     def departure_time(self, time_range):
@@ -44,6 +52,12 @@ class FlightSearchBuilder:
         if not isinstance(time_range[0], time) or not isinstance(time_range[1], time):
             return ConfigurationError("Input to arrival_time must be a tuple of string objects that represent times.")
         self._return_time = time_range
+        return self
+
+    def return_departure_date(self, return_departure_date):
+        if not isinstance(return_departure_date, date):
+            return ConfigurationError("Input to departure_date must be of type datetime")
+        self._return_departure_date = return_departure_date
         return self
 
     def return_departure_time(self, time_range):
@@ -65,13 +79,13 @@ class FlightSearchBuilder:
     def weekend(self):
         self._departure_time = (time(hour=18, minute=0), time(hour=23, minute=59))
         #self._arrival_time = (time(hour=0, minute=0), time(hour=6, minute=0))
-        self._return_arrival_time = (time(hour=0, minute=0), time(hour=23, minute=59))
+        self._return_arrival_time = (time(hour=0, minute=0), time(hour=23, minute=00))
         self._departure_day = Day.FRIDAY
         self._return_arrival_day = Day.SUNDAY
         return self
 
     def price_threshold(self, price):
-        if type(price) != float or type(price) != int:
+        if type(price) != float and type(price) != int:
             return ConfigurationError("Input to price_threshold must be of type int or float")
         self._price_threshold = price
         return self
