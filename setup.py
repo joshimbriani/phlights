@@ -26,7 +26,7 @@ setup(
         "six == 1.12.0",
         "typed-ast == 1.4.0",
         "tzlocal == 1.5.1",
-        "urllib3 == 1.25.3",
+        "urllib3 == 1.26.5",
         "wrapt == 1.11.2"
     ],
 )
